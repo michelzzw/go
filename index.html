@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>围棋记分器 / Go Score Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f7f7;
+            font-weight: bold;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 5px;
+            text-align: center;
+        }
+        #result h2 {
+            border: none;
+            margin-bottom: 10px;
+        }
+        #result p {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+        #totalScore {
+            font-weight: bold;
+            color: #0056b3;
+            font-size: 24px;
+        }
+        #rewardText {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>围棋记分器 / Go Score Calculator</h1>
+
+        <h2>计分规则 / Scoring Rules</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>项目 / Item</th>
+                    <th>得分 / Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>野狐下棋 / Fox Go Server</b></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>下1盘 / Play 1 game</td>
+                    <td>+2</td>
+                </tr>
+                <tr>
+                    <td>赢1盘 / Win 1 game</td>
+                    <td>+5 (额外 / extra)</td>
+                </tr>
+                <tr>
+                    <td>升1级 / Promote by 1 rank</td>
+                    <td>+50 (额外 / extra)</td>
+                </tr>
+                <tr>
+                    <td><b>101围棋网的天梯训练 / "Ladder training" on 101weiqi.com <br>从201开始做 / Start from 201 </b></td>
+                    
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>过1个系列(10题) / Complete 1 series (10 problems)</td>
+                    <td>+1</td>
+                </tr>
+                <tr>
+                    <td>过10个系列 / Complete 10 series</td>
+                    <td>+10 (额外 / extra)</td>
+                </tr>
+                <tr>
+                    <td>过100个系列 / Complete 100 series</td>
+                    <td>+100 (额外 / extra)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>输入你的战绩 / Enter Your Results</h2>
+        <div class="input-group">
+            <label for="gamesPlayed">下了几盘 (Games Played):</label>
+            <input type="number" id="gamesPlayed" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="gamesWon">赢了几盘 (Games Won):</label>
+            <input type="number" id="gamesWon" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="promotions">升了几级 (Promotions):</label>
+            <input type="number" id="promotions" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="seriesCompleted">过了几个系列题目 (Problem Series Completed):</label>
+            <input type="number" id="seriesCompleted" min="0" value="0">
+        </div>
+
+        <button onclick="calculateScore()">计算总分 / Calculate Score</button>
+
+        <div id="result" style="display: none;">
+            <h2>最终得分 / Final Score</h2>
+            <p>总分 / Total Score: <span id="totalScore">0</span></p>
+            <p>获得奖励 / Reward: <span id="rewardText"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function calculateScore() {
+            // 1. Get values from input fields and convert to numbers
+            const gamesPlayed = parseInt(document.getElementById('gamesPlayed').value, 10) || 0;
+            const gamesWon = parseInt(document.getElementById('gamesWon').value, 10) || 0;
+            const promotions = parseInt(document.getElementById('promotions').value, 10) || 0;
+            const seriesCompleted = parseInt(document.getElementById('seriesCompleted').value, 10) || 0;
+
+            // 2. Calculate the score based on the rules
+            let score = 0;
+            score += gamesPlayed * 2;
+            score += gamesWon * 5;
+            score += promotions * 50;
+            score += seriesCompleted * 1;
+            
+            // Calculate bonuses for problem series
+            // For every 10 series, add 10 points
+            score += Math.floor(seriesCompleted / 10) * 10;
+            // For every 100 series, add 100 points
+            score += Math.floor(seriesCompleted / 100) * 100;
+
+            // 3. Determine the reward
+            let reward = "没有奖励 (No Reward)";
+            if (score >= 200) {
+                reward = "玩具或棋具 (Toy/Go equipment)";
+            } else if (score >= 100) {
+                reward = "围棋书/其他书 (Go book/books)";
+            } else if (score >= 30) {
+                reward = "巧克力/点心 (Chocolate/snack)";
+            }
+
+            // 4. Display the results
+            document.getElementById('totalScore').innerText = score;
+            document.getElementById('rewardText').innerText = reward;
+            document.getElementById('result').style.display = 'block'; // Show the result box
+        }
+    </script>
+
+</body>
+</html>
